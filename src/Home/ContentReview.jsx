@@ -19,7 +19,7 @@ const ContentReview = () => {
 
   // Comment input state
   const [newComment, setNewComment] = useState('');
- const [loadingReply, setLoadingReply] = useState({});
+  const [loadingReply, setLoadingReply] = useState({});
   const [loading, setLoading] = useState(false);
 
 
@@ -140,13 +140,54 @@ const ContentReview = () => {
 
   }
 
+  //handle commment delete
+  const handleCommentDelete = async (id) => {
+    debugger
+    const res = await api.delete(`reviews/deletereviewcomment/${id}`);
+    debugger
+    if (res.data) {
+      setReviewData(prev => ({
+        ...prev,
+        reviewReplies: prev.reviewReplies.filter(reply => reply?.commentReply.id != id),
+      }))
+      console.log(data);
+      console.log(id);
+    } else {
+      alert("delete failed")
+    }
+  }
+
+  const handleCommentReplyDelete = async (commentId, id) => {
+    debugger
+    const res = await api.delete(`reviews/deletereviewcomment/${id}`);
+    debugger
+    if (res.data) {
+      setReviewData(prev => ({
+        ...prev,
+        reviewReplies: prev.reviewReplies.map(reply => {
+          if (reply.commentReply.id === commentId) {
+            return {
+              ...reply,
+              replies: reply.replies.filter(repliesList => repliesList.commentedBy.id !== id)
+            };
+          }
+          return reply;
+        }),
+      }));
+      console.log(data);
+      console.log(id);
+    } else {
+      alert("delete failed")
+    }
+  }
+
   return (
     <div style={{ maxWidth: "600px", margin: "20px auto", fontFamily: "Arial, sans-serif" }}>
       <h2>{data.contentName}</h2>
-      <img src={data.contentPoster} alt={data.contentName} style={{ width: "100%", borderRadius: "8px" }}  onError={(e) => {
-    e.target.onerror = null; // prevent infinite loop
-    e.target.src = 'https://www.omdbapi.com/src/poster.jpg'; // replace with fallback image
-  }}/>
+      <img src={data.contentPoster} alt={data.contentName} style={{ width: "100%", borderRadius: "8px" }} onError={(e) => {
+        e.target.onerror = null; // prevent infinite loop
+        e.target.src = 'https://www.omdbapi.com/src/poster.jpg'; // replace with fallback image
+      }} />
       <div style={{ marginTop: "20px", backgroundColor: "#f9f9f9", padding: "15px", borderRadius: "8px" }}>
         <div>
           {
@@ -251,6 +292,10 @@ const ContentReview = () => {
               <p>
                 <strong onClick={() => handleContent(item.commentReply.userDto?.id)} style={{ cursor: 'pointer' }}>{item.commentReply.userDto?.name}:</strong> {item.commentReply.reply}
               </p>
+              {item?.commentReply?.userDto.id == userId && <p>
+                <button onClick={() => handleCommentDelete(item.commentReply.id)}>Delete</button>
+              </p>}
+
               <small>{new Date(item.commentReply.createdAt).toLocaleString()}</small>
               {item.replies?.length > 0 && (
                 <div style={{ marginLeft: "20px", marginTop: "10px" }}>
@@ -260,6 +305,11 @@ const ContentReview = () => {
                       <p>
                         <strong onClick={() => handleContent(reply.commentedBy.repliedUser?.id)} style={{ cursor: 'pointer' }}>{reply.commentedBy.repliedUser?.name}:</strong> {reply.commentedBy.reply}
                       </p>
+                      {userId==reply.commentedBy.repliedUser?.id &&
+                      <p>
+                        <button onClick={() => handleCommentReplyDelete(item.commentReply.id, reply.commentedBy.id)}>Delete</button>
+                      </p>
+                      }
                       <small>{new Date(reply.commentedBy.updatedAt).toLocaleString()}</small>
                     </div>
                   ))}
