@@ -6,7 +6,7 @@ import AuthService from '../service/authService';
 import { Popover, Typography, List, ListItem, ListItemText, Button, TextField } from '@mui/material';
 
 const ContentReview = () => {
-   const navigate = useNavigate();
+  const navigate = useNavigate();
   const { id } = useParams();
   const [data, setReviewData] = useState(null);
   const userId = AuthService.getUserId();
@@ -14,10 +14,14 @@ const ContentReview = () => {
   // Popover state
   const [anchorLikes, setAnchorLikes] = useState(null);
   const [anchorDislikes, setAnchorDislikes] = useState(null);
+  const [replyText, setReplyText] = useState({});
+
 
   // Comment input state
   const [newComment, setNewComment] = useState('');
+ const [loadingReply, setLoadingReply] = useState({});
   const [loading, setLoading] = useState(false);
+
 
   // Timer references
   let closeLikesTimeout = null;
@@ -58,6 +62,55 @@ const ContentReview = () => {
     closeDislikesTimeout = setTimeout(() => setAnchorDislikes(null), 200);
   };
 
+  const handleAddReply = async (id, contentId, commentId) => {
+    const reply = replyText[commentId];
+
+    if (!reply || !reply.trim()) {
+      alert('Please enter a comment.');
+      return;
+    }
+
+    setLoadingReply(prev => ({ ...prev, [commentId]: true }));
+    try {
+      const response = await api.post(
+        `reviews/reviewcoment/${id}/${contentId}/${commentId}`,
+        reply,
+        {
+          headers: {
+            'Content-Type': 'text/plain',
+          },
+        }
+      );
+
+      setReviewData(prevData => {
+        if (!prevData) return prevData;
+
+        const updatedReviewReplies = prevData.reviewReplies.map(item => {
+          if (item.commentReply.id === commentId) {
+            return {
+              ...item,
+              replies: [...(item.replies || []), response.data],
+            };
+          }
+          return item;
+        });
+
+        return {
+          ...prevData,
+          reviewReplies: updatedReviewReplies,
+        };
+      });
+
+      // Clear only the reply for the submitted comment
+      setReplyText(prev => ({ ...prev, [commentId]: '' }));
+    } catch (error) {
+      console.error('Error adding comment:', error);
+      alert('Failed to add comment.');
+    }
+    setLoadingReply(prev => ({ ...prev, [commentId]: false }));
+  };
+
+
   // Handler for comment submit
   const handleAddComment = async () => {
     if (!newComment.trim()) {
@@ -67,15 +120,15 @@ const ContentReview = () => {
     setLoading(true);
     try {
       const response = await api.post(`reviews/reviewcoment/${id}`, newComment, {
-  headers: {
-    'Content-Type': 'text/plain'
-  }
-});
+        headers: {
+          'Content-Type': 'text/plain'
+        }
+      });
 
       setReviewData(response.data);
       console.log(response.data)
-
       setNewComment('');
+
     } catch (error) {
       console.error('Error adding comment:', error);
       alert('Failed to add comment.');
@@ -90,42 +143,45 @@ const ContentReview = () => {
   return (
     <div style={{ maxWidth: "600px", margin: "20px auto", fontFamily: "Arial, sans-serif" }}>
       <h2>{data.contentName}</h2>
-      <img src={data.contentPoster} alt={data.contentName} style={{ width: "100%", borderRadius: "8px" }} />
+      <img src={data.contentPoster} alt={data.contentName} style={{ width: "100%", borderRadius: "8px" }}  onError={(e) => {
+    e.target.onerror = null; // prevent infinite loop
+    e.target.src = 'https://www.omdbapi.com/src/poster.jpg'; // replace with fallback image
+  }}/>
       <div style={{ marginTop: "20px", backgroundColor: "#f9f9f9", padding: "15px", borderRadius: "8px" }}>
         <div>
-        {
-          data.likedList &&
-          <button
-                style={{
-                  backgroundColor: data.likedList ? '#0d6efd' : '#eee',
-                  color: data.likedList ? '#fff' : '#000',
-                  border: 'none',
-                  padding: '8px 12px',
-                  marginRight: 10,
-                  cursor: 'pointer',
-                  borderRadius: 4,
-                }}
-              >
-                {data.likedList  ? 'Liked' : 'Like'}
-              </button>
-        }
-        
-              {data.watchList && <button
-                style={{
-                  backgroundColor: data.watchList ? '#198754' : '#eee',
-                  color: data.watchList ? '#fff' : '#000',
-                  border: 'none',
-                  padding: '8px 12px',
-                  cursor: 'pointer',
-                  borderRadius: 4,
-                }}
-              >
-                {data.watchList ? 'Watched' : 'Watch'}
-              </button>}
-              
-      </div>
+          {
+            data.likedList &&
+            <button
+              style={{
+                backgroundColor: data.likedList ? '#0d6efd' : '#eee',
+                color: data.likedList ? '#fff' : '#000',
+                border: 'none',
+                padding: '8px 12px',
+                marginRight: 10,
+                cursor: 'pointer',
+                borderRadius: 4,
+              }}
+            >
+              {data.likedList ? 'Liked' : 'Like'}
+            </button>
+          }
+
+          {data.watchList && <button
+            style={{
+              backgroundColor: data.watchList ? '#198754' : '#eee',
+              color: data.watchList ? '#fff' : '#000',
+              border: 'none',
+              padding: '8px 12px',
+              cursor: 'pointer',
+              borderRadius: 4,
+            }}
+          >
+            {data.watchList ? 'Watched' : 'Watch'}
+          </button>}
+
+        </div>
         <h3>Review</h3>
-        <p><strong>{data.contentReviews?.userDto?.name}:</strong> {data.contentReviews?.review}</p>
+        <p><strong onClick={() => handleContent(data.contentReviews?.userDto?.id)} style={{ cursor: 'pointer' }}>{data.contentReviews?.userDto?.name}:</strong> {data.contentReviews?.review}</p>
 
         {/* 👍 Likes */}
         <p
@@ -148,7 +204,7 @@ const ContentReview = () => {
           <Typography variant="subtitle1" sx={{ p: 1 }}>Liked by:</Typography>
           <List dense>
             {data.isLiked?.map((user, idx) => (
-              <ListItem onClick={()=> handleContent(user.id)} style={{cursor: 'pointer' }} key={idx}>
+              <ListItem onClick={() => handleContent(user.id)} style={{ cursor: 'pointer' }} key={idx}>
                 <ListItemText primary={user.name} />
               </ListItem>
             ))}
@@ -176,7 +232,7 @@ const ContentReview = () => {
           <Typography variant="subtitle1" sx={{ p: 1 }}>Disliked by:</Typography>
           <List dense>
             {data.disLiked?.map((user, idx) => (
-              <ListItem onClick={()=> handleContent(user.id)} style={{cursor: 'pointer' }}  key={idx}>
+              <ListItem onClick={() => handleContent(user.id)} style={{ cursor: 'pointer' }} key={idx}>
                 <ListItemText primary={user.name} />
               </ListItem>
             ))}
@@ -190,16 +246,62 @@ const ContentReview = () => {
       <div style={{ marginTop: "20px" }}>
         <h4>Replies</h4>
         {data.reviewReplies?.length > 0 ? (
-          data.reviewReplies.map(reply => (
-            <div key={reply.id} style={{ padding: "10px", borderBottom: "1px solid #ccc" }}>
-              <p><strong>{reply.userDto?.name}:</strong> {reply.reply}</p>
-              <small>{new Date(reply.createdAt).toLocaleString()}</small>
+          data.reviewReplies.map((item, idx) => (
+            <div key={idx} style={{ padding: "10px", borderBottom: "1px solid #ccc" }}>
+              <p>
+                <strong onClick={() => handleContent(item.commentReply.userDto?.id)} style={{ cursor: 'pointer' }}>{item.commentReply.userDto?.name}:</strong> {item.commentReply.reply}
+              </p>
+              <small>{new Date(item.commentReply.createdAt).toLocaleString()}</small>
+              {item.replies?.length > 0 && (
+                <div style={{ marginLeft: "20px", marginTop: "10px" }}>
+                  <strong>Replies:</strong>
+                  {item.replies.map((reply) => (
+                    <div key={reply.id} style={{ marginTop: "5px" }}>
+                      <p>
+                        <strong onClick={() => handleContent(reply.commentedBy.repliedUser?.id)} style={{ cursor: 'pointer' }}>{reply.commentedBy.repliedUser?.name}:</strong> {reply.commentedBy.reply}
+                      </p>
+                      <small>{new Date(reply.commentedBy.updatedAt).toLocaleString()}</small>
+                    </div>
+                  ))}
+                </div>
+              )}
+              <p>
+                <div style={{ display: 'flex', gap: '8px', alignItems: 'center', maxWidth: '300px', height: '10px' }}>
+                  <TextField
+                    label="Reply"
+                    variant="outlined"
+                    size="small"
+                    value={replyText[item.commentReply.id] || ''}
+                    onChange={(e) =>
+                      setReplyText(prev => ({
+                        ...prev,
+                        [item.commentReply.id]: e.target.value
+                      }))
+                    }
+                    fullWidth
+                  />
+                  <Button
+                    variant="contained"
+                    color="primary"
+                    size="small"
+                    onClick={() => handleAddReply(data.id, data.contentId, item.commentReply.id)}
+                    disabled={loadingReply[item.commentReply.id]}
+                  >
+                    {loading ? '...' : 'Send'}
+                  </Button>
+                </div>
+
+
+              </p>
+
             </div>
           ))
         ) : (
           <p>No replies yet.</p>
         )}
       </div>
+
+
 
       {/* New comment input */}
       <div style={{ marginTop: 20 }}>

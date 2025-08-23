@@ -36,7 +36,7 @@ function Signin() {
 
   return (
     <div> <form onSubmit={handleSubmit}>
-      <h2>Signup</h2>
+      <h2>SignIn</h2>
 
       <label>Email:</label>
       <input

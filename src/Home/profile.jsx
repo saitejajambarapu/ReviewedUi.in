@@ -81,7 +81,7 @@ const Profile = () => {
         <h1>User Info</h1>
         <p><strong>Name:</strong> {profileData.user.name}</p>
         <p><strong>Email:</strong> {profileData.user.email}</p>
-        <p><strong>Role:</strong> {profileData.user.roles.join(', ')}</p>
+        {/* <p><strong>Role:</strong> {profileData.user?.roles.join(', ')}</p> */}
       </section>
 
       {/* Review Section */}
