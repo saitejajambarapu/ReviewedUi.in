@@ -4,28 +4,32 @@ import Signup from './login/signup';
 import Signin from './login/signin';
 import Reviews from './Home/reviews';
 import ContentReview from './Home/ContentReview';
-import Layout from './navbar/Layout'
+import Layout from './navbar/Layout';
 import SearchResults from './navbar/SearchResults';
 import SignOut from './login/signout';
 import Profile from './Home/profile';
 import About from './navbar/About';
 import SearchSelected from './pages/SearchSelected';
+import Home from './Home/indexpage';
 
 function AppRouter() {
   return (
     <BrowserRouter>
       <Routes>
+        {/* Layout wrapper */}
         <Route path="/" element={<Layout />}>
-         <Route path="/about" element={<About />}></Route>
-        <Route path="/search" element={<SearchResults/>} />
-        <Route path="/signup" element={<Signup />} />
-        <Route path="/signin" element={<Signin />} />
-        <Route path="/signout" element={<SignOut />} />
-        <Route path="/reviews" element={<Reviews />} />
-        <Route path="/review/:id" element={<ContentReview />} />
-        <Route path="/search/:id" element={<SearchSelected />} />
-        <Route path="/Profile/:id" element={<Profile />} />
-        <Route path="/myProfile" element={<Profile />} />
+          {/* Default home page */}
+          <Route path="/" element={<Home />} />
+          <Route path="about" element={<About />} />
+          <Route path="search" element={<SearchResults />} />
+          <Route path="signup" element={<Signup />} />
+          <Route path="signin" element={<Signin />} />
+          <Route path="signout" element={<SignOut />} />
+          <Route path="reviews" element={<Reviews />} />
+          <Route path="review/:id" element={<ContentReview />} />
+          <Route path="search/:id" element={<SearchSelected />} />
+          <Route path="profile/:id" element={<Profile />} />
+          <Route path="myProfile" element={<Profile />} />
         </Route>
       </Routes>
     </BrowserRouter>

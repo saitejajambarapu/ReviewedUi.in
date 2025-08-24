@@ -2,15 +2,17 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { useLocation } from 'react-router-dom';
 import api from '../service/api';
 import { useNavigate } from 'react-router-dom';
+
 const SearchResults = () => {
   const navigate = useNavigate();
   const [results, setResults] = useState([]);
   const location = useLocation();
-  // ✅ This makes sure q updates when the URL changes
+
   const q = useMemo(() => {
     const queryParams = new URLSearchParams(location.search);
     return queryParams.get('q');
   }, [location.search]);
+
   useEffect(() => {
     const fetchContent = async () => {
       try {
@@ -25,101 +27,156 @@ const SearchResults = () => {
 
     if (q) fetchContent();
   }, [q]);
-  // const [likedIds, setLikedIds] = useState(new Set());
-  // const [watchedIds, setWatchedIds] = useState(new Set());
 
   if (!results || results.length === 0) {
-    return <div>No results found.</div>;
+    return <div style={{ color: '#fff', textAlign: 'center', marginTop: 50 }}>No results found.</div>;
   }
 
   const handleContent = async (id) => {
     navigate(`/search/${id}`);
+  };
 
-  }
-
-    const toggleLike = (id) => {
+  const toggleLike = (id) => {
     setResults((prev) =>
       prev.map((item) => {
         if (item.id === id) {
           const updateItem = { ...item, liked: !item.liked };
           api.post("savecontentInteractions", updateItem, {
-            headers: {
-              'Content-Type': 'application/json'
-            }
+            headers: { 'Content-Type': 'application/json' }
           });
-
           return updateItem;
         }
-
         return item;
-      }
-      )
+      })
     );
   };
+
   const toggleWatch = (id) => {
     setResults((prev) =>
       prev.map((item) => {
         if (item.id === id) {
           const updateItem = { ...item, watched: !item.watched };
           api.post("savecontentInteractions", updateItem, {
-            headers: {
-              'Content-Type': 'application/json'
-            }
+            headers: { 'Content-Type': 'application/json' }
           });
-
           return updateItem;
         }
-
         return item;
-      }
-      )
+      })
     );
   };
 
   return (
-    <div>
+    <div style={styles.container}>
       {results.map((item) => (
-        <div key={item.id} style={{ border: '1px solid #ddd', padding: 15, marginBottom: 20, borderRadius: 8 }}>
-          <h2 onClick={()=> handleContent(item.imdbID)} style={{cursor: 'pointer' }}>{item.Title} ({item.Year})</h2>
-          {item.Poster==="N/A" ?<img onClick={() => handleContent(item.imdbID)} src={"https://tse3.mm.bing.net/th/id/OIP.RGIBnKlRSqUFnpzhRNvpOAHaJQ?pid=Api&P=0&h=180"} alt={item.Title} style={{ width: 150, float: 'left', marginRight: 15, borderRadius: 8,cursor: 'pointer' }} /> :
-          <img onClick={() => handleContent(item.imdbID)} src={item.Poster}  alt={item.Title} style={{ width: 150, float: 'left', marginRight: 15, borderRadius: 8 , cursor: 'pointer' }} />}
-          <div>
-            <p><strong>Content Type:</strong> {item.Type}</p>
-            <div style={{ marginTop: 10 }}>
+        <div key={item.id} style={styles.card}>
+          <div style={styles.posterContainer} onClick={() => handleContent(item.imdbID)}>
+            {item.Poster === "N/A" ? (
+              <img
+                src={"https://tse3.mm.bing.net/th/id/OIP.RGIBnKlRSqUFnpzhRNvpOAHaJQ?pid=Api&P=0&h=180"}
+                alt={item.Title}
+                style={styles.poster}
+              />
+            ) : (
+              <img src={item.Poster} alt={item.Title} style={styles.poster} />
+            )}
+          </div>
+
+          <div style={styles.details}>
+            <h2
+              style={styles.title}
+              onClick={() => handleContent(item.imdbID)}
+            >
+              {item.Title} ({item.Year})
+            </h2>
+            <p style={styles.type}><strong>Type:</strong> {item.Type}</p>
+
+            <div style={styles.actions}>
               <button
                 onClick={() => toggleLike(item.id)}
                 style={{
-                  backgroundColor: item.liked ? '#0d6efd' : '#eee',
-                  color: item.liked ? '#fff' : '#000',
-                  border: 'none',
-                  padding: '8px 12px',
-                  marginRight: 10,
-                  cursor: 'pointer',
-                  borderRadius: 4,
+                  ...styles.button,
+                  backgroundColor: item.liked ? '#e50914' : '#2b2b2b',
+                  color: item.liked ? '#fff' : '#ccc'
                 }}
               >
-                {item.liked ? 'Liked' : 'Like'}
+                {item.liked ? '❤️ Liked' : '🤍 Like'}
               </button>
               <button
                 onClick={() => toggleWatch(item.id)}
                 style={{
-                  backgroundColor: item.watched ? '#198754' : '#eee',
-                  color: item.watched ? '#fff' : '#000',
-                  border: 'none',
-                  padding: '8px 12px',
-                  cursor: 'pointer',
-                  borderRadius: 4,
+                  ...styles.button,
+                  backgroundColor: item.watched ? '#0f9d58' : '#2b2b2b',
+                  color: item.watched ? '#fff' : '#ccc'
                 }}
               >
-                {item.watched ? 'Watched' : 'Watch'}
+                {item.watched ? '✅ Watched' : '👀 Watch'}
               </button>
             </div>
           </div>
-          <div style={{ clear: 'both' }}></div>
         </div>
       ))}
     </div>
   );
+};
+
+const styles = {
+  container: {
+    backgroundColor: '#141414',
+    minHeight: '100vh',
+    padding: '30px',
+    color: '#fff',
+    display: 'grid',
+    gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
+    gap: '20px'
+  },
+  card: {
+    background: 'linear-gradient(145deg, #1c1c1c, #0d0d0d)',
+    borderRadius: '12px',
+    overflow: 'hidden',
+    boxShadow: '0 8px 20px rgba(0,0,0,0.7)',
+    transition: 'transform 0.3s ease, box-shadow 0.3s ease',
+    cursor: 'pointer'
+  },
+  posterContainer: {
+    width: '100%',
+    height: '400px',
+    overflow: 'hidden'
+  },
+  poster: {
+    width: '100%',
+    height: '100%',
+    objectFit: 'cover',
+    transition: 'transform 0.4s ease',
+  },
+  details: {
+    padding: '15px'
+  },
+  title: {
+    fontSize: '1.1rem',
+    fontWeight: 'bold',
+    marginBottom: '8px',
+    cursor: 'pointer',
+    color: '#fff'
+  },
+  type: {
+    fontSize: '0.9rem',
+    color: '#aaa'
+  },
+  actions: {
+    marginTop: '15px',
+    display: 'flex',
+    gap: '10px'
+  },
+  button: {
+    flex: 1,
+    padding: '8px 12px',
+    border: 'none',
+    borderRadius: '6px',
+    fontWeight: 'bold',
+    cursor: 'pointer',
+    transition: 'background 0.3s ease, transform 0.2s ease'
+  }
 };
 
 export default SearchResults;
