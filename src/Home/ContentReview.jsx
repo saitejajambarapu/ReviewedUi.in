@@ -96,6 +96,11 @@ const ContentReview = () => {
     else alert("Delete failed");
   };
 
+  const navigateReviews = (id) => {
+    debugger
+    navigate(`/review/${id}`);
+  }
+
   return (
     <div style={{ maxWidth: "900px", margin: "20px auto", fontFamily: "Arial, sans-serif", backgroundColor: '#1e1e1e', color: '#e0e0e0', padding: '20px', borderRadius: '12px', boxShadow: '0 6px 12px rgba(0,0,0,0.5)' }}>
 
@@ -121,7 +126,7 @@ const ContentReview = () => {
               <p
                 style={{ cursor: "pointer", color: "#4caf50", fontWeight: '600' }}
                 onMouseEnter={handleLikesEnter}
-                
+
               >
                 👍 Likes: {data.isLiked?.length || 0}
               </p>
@@ -218,11 +223,11 @@ const ContentReview = () => {
 
               {item.replies?.map(reply => (
                 <div key={reply.id} style={{ backgroundColor: '#333', marginLeft: '20px', padding: '8px', borderRadius: '8px', marginTop: '6px' }}>
-                  <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '10px'}}>
-                     <p><strong onClick={() => handleContent(reply.commentedBy.repliedUser?.id)} style={{ cursor: 'pointer', color: '#ffcc00' }}>{reply.commentedBy.repliedUser?.name}:</strong> {reply.commentedBy.reply}</p>
-                  {userId == reply.commentedBy.repliedUser?.id && <Button size="small" color="red" variant="contained" onClick={() => handleCommentReplyDelete(item.commentReply.id, reply.commentedBy.id)}>Delete</Button>}
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '10px' }}>
+                    <p><strong onClick={() => handleContent(reply.commentedBy.repliedUser?.id)} style={{ cursor: 'pointer', color: '#ffcc00' }}>{reply.commentedBy.repliedUser?.name}:</strong> {reply.commentedBy.reply}</p>
+                    {userId == reply.commentedBy.repliedUser?.id && <Button size="small" color="red" variant="contained" onClick={() => handleCommentReplyDelete(item.commentReply.id, reply.commentedBy.id)}>Delete</Button>}
                   </div>
-                 <small style={{ color: '#aaa' }}>{new Date(reply.commentedBy.updatedAt).toLocaleString()}</small>
+                  <small style={{ color: '#aaa' }}>{new Date(reply.commentedBy.updatedAt).toLocaleString()}</small>
                 </div>
               ))}
 
@@ -241,17 +246,20 @@ const ContentReview = () => {
           <Button variant="contained" color="primary" onClick={handleAddComment} sx={{ mt: 1 }}>{loading ? 'Submitting...' : 'Submit Comment'}</Button>
         </div>
       </div>
-      <div style={{ marginBottom: '30px' }}>
-    <h2 style={{ color: '#ff0000', marginBottom: '10px', fontSize: '1.5rem' }}>similarReviews</h2>
-    <div style={{
-      display: 'flex',
-      overflowX: 'auto',
-      paddingBottom: '10px',
-      scrollbarWidth: 'none',
-    }}>
-      {data.similarReviews?.map(item => <Card key={item.id} item={item} showHeart={false} />)}
-    </div>
-  </div>
+      {data.similarReviews?.length > 0 &&
+        <div style={{ marginBottom: '30px' }}>
+        <h2 style={{ color: '#ff0000', marginBottom: '10px', fontSize: '1.5rem' }}>similarReviews</h2>
+        <div style={{
+          display: 'flex',
+          overflowX: 'auto',
+          paddingBottom: '10px',
+          scrollbarWidth: 'none',
+        }}>
+          {data.similarReviews?.map(item => <Card key={item.id} item={item} showHeart={false} navigateingpath={navigateReviews} />)}
+        </div>
+      </div>
+      }
+      
     </div>
   );
 };

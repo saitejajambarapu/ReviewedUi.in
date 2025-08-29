@@ -2,14 +2,14 @@ import { FaHeart, FaThumbsUp, FaThumbsDown, FaComment } from 'react-icons/fa';
 import { useNavigate, useParams } from 'react-router-dom';
 import AuthService from '../service/authService';
 
-const Card = ({ item, showHeart = false }) => {
+const Card = ({ item, showHeart = false, navigateingpath }) => {
   const commentsCount = item.reviewReplies?.length || 0;
   const navigate = useNavigate();
   const userId = AuthService.getUserId();
 
   const handlePost = () => {
     if(item.contentReviews) {
-      navigate(`/review/${item.contentReviews.id}`);
+      navigateingpath(item.contentReviews.id);
     } else {
       alert('No review found!');
     }

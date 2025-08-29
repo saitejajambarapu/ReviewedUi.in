@@ -7,18 +7,48 @@ const SearchResults = () => {
   const navigate = useNavigate();
   const [results, setResults] = useState([]);
   const location = useLocation();
+  const [loadbutton, setLoadButton] = useState(false);
+  const [pageNumber, setPageNumber] = useState(1);
+  const [totalPage, setTotalPage] = useState(10);
 
   const q = useMemo(() => {
     const queryParams = new URLSearchParams(location.search);
     return queryParams.get('q');
   }, [location.search]);
 
+
+  const loadData = () => {
+    debugger
+    const count = totalPage;
+    const totalCount = Math.ceil(count / 10);
+    var presentCount = pageNumber + 1;
+    if (presentCount <= totalCount) {
+      setPageNumber(presentCount);
+    }if(presentCount==totalCount){
+      setLoadButton(false);
+    }
+    else{
+      setLoadButton(false);
+    }
+  }
+
   useEffect(() => {
     const fetchContent = async () => {
       try {
-        const response = await api.get('content', { params: { title: q } });
+        debugger
+        const response = await api.post("content", {
+          title: q,
+          pageNumber: 2, 
+          isApi: true      
+        });
         console.log('Success:', response.data);
-        setResults(response.data);
+        setResults(response.data.contents);
+        setTotalPage(results.data.totalResults)
+        debugger
+        if(response.data.totalResults>1){
+          setLoadButton(true)
+        }
+        
       } catch (error) {
         console.error('Error fetching reviews:', error);
         alert('Unable to fetch the Content Details.');
@@ -26,7 +56,7 @@ const SearchResults = () => {
     };
 
     if (q) fetchContent();
-  }, [q]);
+  }, [pageNumber]);
 
   if (!results || results.length === 0) {
     return <div style={{ color: '#fff', textAlign: 'center', marginTop: 50 }}>No results found.</div>;
@@ -116,6 +146,11 @@ const SearchResults = () => {
           </div>
         </div>
       ))}
+      <div>
+        <div>
+          {loadbutton && <button onClick={loadData}>Load Data</button>}
+        </div>
+      </div>
     </div>
   );
 };
