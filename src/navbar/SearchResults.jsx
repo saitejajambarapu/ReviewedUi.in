@@ -51,7 +51,7 @@ const SearchResults = () => {
         }
       } catch (error) {
         debugger
-        showNotification(`unable fetch the details ${error.message}`,"error")
+        showNotification(`unable fetch the details ${error.message}`, "error")
         console.error('Error fetching reviews:', error);
 
 
@@ -60,7 +60,7 @@ const SearchResults = () => {
 
 
     if (q) fetchContent();
-  }, [q,pageNumber]);
+  }, [q, pageNumber]);
 
   if (!results || results.length === 0) {
     return <div style={{ color: '#fff', textAlign: 'center', marginTop: 50 }}>No results found.</div>;
@@ -76,7 +76,7 @@ const SearchResults = () => {
         isApi: loadbutton
       });
       console.log("saved all the data:", response.data);
-      if(response.data) showNotification(`fetched All Details for ${q} `,"success")
+      if (response.data) showNotification(`fetched All Details for ${q} `, "success")
     }
     navigate(`/search/${id}`);
   };
@@ -112,66 +112,108 @@ const SearchResults = () => {
   };
 
   return (
-    <div style={styles.container}>
-      {results.map((item) => (
-        <div key={item.id} style={styles.card}>
-          <div style={styles.posterContainer} onClick={() => handleContent(item.imdbID)}>
-            {item.Poster === "N/A" ? (
-              <img
-                src={"https://tse3.mm.bing.net/th/id/OIP.RGIBnKlRSqUFnpzhRNvpOAHaJQ?pid=Api&P=0&h=180"}
-                alt={item.Title}
-                style={styles.poster}
-              />
-            ) : (
-              <img src={item.Poster} alt={item.Title} style={styles.poster} />
-            )}
+    <div>
+      {loadbutton && (
+        <>
+          {/* Fixed button */}
+          <div
+            style={{
+              position: "fixed",
+              top: "80px", // distance from top
+              left: "50%",
+              transform: "translateX(-50%)",
+              zIndex: 1000,
+            }}
+          >
+            <button
+              onClick={loadData}
+              style={{
+                backgroundColor: "#e50914", // Netflix red
+                color: "#fff",
+                fontSize: "20px",
+                fontWeight: "bold",
+                padding: "14px 36px",
+                border: "none",
+                borderRadius: "4px",
+                cursor: "pointer",
+                transition: "all 0.3s ease",
+                boxShadow: "0 4px 12px rgba(0,0,0,0.3)",
+              }}
+              onMouseOver={(e) =>
+                (e.currentTarget.style.backgroundColor = "#f40612")
+              }
+              onMouseOut={(e) =>
+                (e.currentTarget.style.backgroundColor = "#e50914")
+              }
+            >
+              Load Data
+            </button>
           </div>
 
-          <div style={styles.details}>
-            <h2
-              style={styles.title}
-              onClick={() => handleContent(item.imdbID)}
-            >
-              {item.Title} ({item.Year})
-            </h2>
-            <p style={styles.type}><strong>Type:</strong> {item.Type}</p>
+          {/* 👇 Invisible spacer div to push content down */}
+          <div style={{ height: "80px" }}></div>
+        </>
+      )}
 
-            <div style={styles.actions}>
-              <button
-                onClick={() => toggleLike(item.id)}
-                style={{
-                  ...styles.button,
-                  backgroundColor: item.liked ? '#e50914' : '#2b2b2b',
-                  color: item.liked ? '#fff' : '#ccc'
-                }}
+      <div style={styles.container}>
+        {results.map((item) => (
+          <div key={item.id} style={styles.card}>
+            <div style={styles.posterContainer} onClick={() => handleContent(item.imdbID)}>
+              {item.Poster === "N/A" ? (
+                <img
+                  src={"https://tse3.mm.bing.net/th/id/OIP.RGIBnKlRSqUFnpzhRNvpOAHaJQ?pid=Api&P=0&h=180"}
+                  alt={item.Title}
+                  style={styles.poster}
+                />
+              ) : (
+                <img src={item.Poster} alt={item.Title} style={styles.poster} />
+              )}
+            </div>
+
+            <div style={styles.details}>
+              <h2
+                style={styles.title}
+                onClick={() => handleContent(item.imdbID)}
               >
-                {item.liked ? '❤️ Liked' : '🤍 Like'}
-              </button>
-              <button
-                onClick={() => toggleWatch(item.id)}
-                style={{
-                  ...styles.button,
-                  backgroundColor: item.watched ? '#0f9d58' : '#2b2b2b',
-                  color: item.watched ? '#fff' : '#ccc'
-                }}
-              >
-                {item.watched ? '✅ Watched' : '👀 Watch'}
-              </button>
+                {item.Title} ({item.Year})
+              </h2>
+              <p style={styles.type}><strong>Type:</strong> {item.Type}</p>
+
+              <div style={styles.actions}>
+                <button
+                  onClick={() => toggleLike(item.id)}
+                  style={{
+                    ...styles.button,
+                    backgroundColor: item.liked ? '#e50914' : '#2b2b2b',
+                    color: item.liked ? '#fff' : '#ccc'
+                  }}
+                >
+                  {item.liked ? '❤️ Liked' : '🤍 Like'}
+                </button>
+                <button
+                  onClick={() => toggleWatch(item.id)}
+                  style={{
+                    ...styles.button,
+                    backgroundColor: item.watched ? '#0f9d58' : '#2b2b2b',
+                    color: item.watched ? '#fff' : '#ccc'
+                  }}
+                >
+                  {item.watched ? '✅ Watched' : '👀 Watch'}
+                </button>
+              </div>
             </div>
           </div>
-        </div>
-      ))}
-      <div>
-        <div>
-          {loadbutton && <button onClick={loadData}>Load Data</button>}
-        </div>
+        ))}
       </div>
+
     </div>
+
   );
 };
 
 const styles = {
   container: {
+    paddingTop: "80px",
     backgroundColor: '#141414',
     minHeight: '100vh',
     padding: '30px',
