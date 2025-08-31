@@ -1,11 +1,15 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useLocation } from "react-router-dom";
 import api from "../service/api";
+import { useNotification } from "../service/notificationprovider";
 
 const SearchSelected = () => {
   const { id } = useParams();
   const [result, setResult] = useState(null);
   const location = useLocation();
+
+  const { showNotification } = useNotification();
+  
 
   useEffect(() => {
     const fetchContent = async () => {
@@ -25,16 +29,24 @@ const SearchSelected = () => {
   }
 
   // --- Handlers ---
-  const toggleLike = () => {
+  const toggleLike = async() => {
     const updated = { ...result, liked: !result.liked };
     setResult(updated);
-    api.post("savecontentInteractions", updated, { headers: { "Content-Type": "application/json" } });
+    const response = await api.post("savecontentInteractions", updated, { headers: { "Content-Type": "application/json" } });
+    response.data?.liked ?
+    showNotification("Added to Liked List", "success")
+    :
+    showNotification("Removed from Liked List", "error")
   };
 
-  const toggleWatch = () => {
+  const toggleWatch = async() => {
     const updated = { ...result, watched: !result.watched };
     setResult(updated);
-    api.post("savecontentInteractions", updated, { headers: { "Content-Type": "application/json" } });
+    const response  =await api.post("savecontentInteractions", updated, { headers: { "Content-Type": "application/json" } });
+    response.data?.watched ?
+    showNotification("Added to Watched List", "success")
+    :
+    showNotification("Removed from Watched List", "error")
   };
 
   const handleReviewText = (value) => setResult((prev) => ({ ...prev, review: value }));
@@ -44,8 +56,11 @@ const SearchSelected = () => {
     try {
       await api.post("savecontentInteractions", result, { headers: { "Content-Type": "application/json" } });
       console.log("Review saved!");
+      showNotification("Review saved", "success")
+
     } catch (error) {
       console.error("Failed to save review:", error);
+      showNotification(`Failed to save review: ${error.message}`, "error")
     }
   };
 

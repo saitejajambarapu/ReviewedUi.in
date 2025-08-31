@@ -2,9 +2,12 @@ import React, { useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import AuthService from "../service/authService";
+import { useNotification } from "../service/notificationprovider";
+
 
 function Signin() {
   const navigate = useNavigate();
+  const { showNotification } = useNotification();
 
   const [formData, setFormData] = useState({
     email: "",
@@ -26,9 +29,12 @@ function Signin() {
         "http://localhost:8080/auth/login",
         formData
       );
+      debugger
       AuthService.login(response.data);
+      debugger
+      showNotification("Welcome back 🎉", "success")
       navigate("/reviews");
-      alert("Welcome Back!");
+      
     } catch (error) {
       alert("Signin failed.");
     }

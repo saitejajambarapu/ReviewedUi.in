@@ -2,14 +2,17 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { useLocation } from 'react-router-dom';
 import api from '../service/api';
 import { useNavigate } from 'react-router-dom';
+import { useNotification } from '../service/notificationprovider';
 
 const SearchResults = () => {
+  const { showNotification } = useNotification();
   const navigate = useNavigate();
   const [results, setResults] = useState([]);
   const location = useLocation();
   const [loadbutton, setLoadButton] = useState(false);
   const [pageNumber, setPageNumber] = useState(1);
   const [totalPage, setTotalPage] = useState(10);
+
 
   const q = useMemo(() => {
     const queryParams = new URLSearchParams(location.search);
@@ -24,10 +27,8 @@ const SearchResults = () => {
     var presentCount = pageNumber + 1;
     if (presentCount <= totalCount) {
       setPageNumber(presentCount);
-    }if(presentCount==totalCount){
-      setLoadButton(false);
     }
-    else{
+    else {
       setLoadButton(false);
     }
   }
@@ -38,31 +39,45 @@ const SearchResults = () => {
         debugger
         const response = await api.post("content", {
           title: q,
-          pageNumber: 2, 
-          isApi: true      
+          pageNumber: pageNumber,
+          isApi: loadbutton
         });
         console.log('Success:', response.data);
         setResults(response.data.contents);
-        setTotalPage(results.data.totalResults)
+        setTotalPage(response.data.totalResults)
         debugger
-        if(response.data.totalResults>1){
+        if (response.data.totalResults > 10) {
           setLoadButton(true)
         }
-        
       } catch (error) {
+        debugger
+        showNotification(`unable fetch the details ${error.message}`,"error")
         console.error('Error fetching reviews:', error);
-        alert('Unable to fetch the Content Details.');
+
+
       }
     };
 
+
     if (q) fetchContent();
-  }, [pageNumber]);
+  }, [q,pageNumber]);
 
   if (!results || results.length === 0) {
     return <div style={{ color: '#fff', textAlign: 'center', marginTop: 50 }}>No results found.</div>;
   }
 
   const handleContent = async (id) => {
+    debugger
+    const totalCount = Math.ceil(totalPage / 10);
+    if (pageNumber < totalCount) {
+      const response = await api.post(`content/skippedlist/${pageNumber}`, {
+        title: q,
+        pageNumber: totalCount,
+        isApi: loadbutton
+      });
+      console.log("saved all the data:", response.data);
+      if(response.data) showNotification(`fetched All Details for ${q} `,"success")
+    }
     navigate(`/search/${id}`);
   };
 

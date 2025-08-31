@@ -11,28 +11,32 @@ import Profile from './Home/profile';
 import About from './navbar/About';
 import SearchSelected from './pages/SearchSelected';
 import Home from './Home/indexpage';
+import { NotificationProvider } from './service/notificationprovider';
 
 function AppRouter() {
   return (
-    <BrowserRouter>
-      <Routes>
-        {/* Layout wrapper */}
-        <Route path="/" element={<Layout />}>
-          {/* Default home page */}
-          <Route path="/" element={<Home />} />
-          <Route path="about" element={<About />} />
-          <Route path="search" element={<SearchResults />} />
-          <Route path="signup" element={<Signup />} />
-          <Route path="signin" element={<Signin />} />
-          <Route path="signout" element={<SignOut />} />
-          <Route path="reviews" element={<Reviews />} />
-          <Route path="review/:id" element={<ContentReview />} />
-          <Route path="search/:id" element={<SearchSelected />} />
-          <Route path="profile/:id" element={<Profile />} />
-          <Route path="myProfile" element={<Profile />} />
-        </Route>
-      </Routes>
-    </BrowserRouter>
+    <NotificationProvider> {/* ✅ Wrap everything here */}
+      <BrowserRouter>
+        <Routes>
+          {/* Layout wrapper */}
+          <Route path="/" element={<Layout />}>
+            {/* Default home page */}
+            <Route index element={<Home />} />
+            <Route path="about" element={<About />} />
+            <Route path="search" element={<SearchResults />} />
+            <Route path="signup" element={<Signup />} />
+            <Route path="signin" element={<Signin />} />
+            <Route path="signout" element={<SignOut />} />
+            <Route path="reviews" element={<Reviews />} />
+            <Route path="review/:id" element={<ContentReview />} />
+            <Route path="content/:id" element={<SearchSelected />} />
+            <Route path="search/:id" element={<SearchSelected />} />
+            <Route path="profile/:id" element={<Profile />} />
+            <Route path="myProfile" element={<Profile />} />
+          </Route>
+        </Routes>
+      </BrowserRouter>
+    </NotificationProvider>
   );
 }
 

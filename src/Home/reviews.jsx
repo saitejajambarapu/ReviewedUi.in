@@ -3,8 +3,9 @@ import api from '../service/api';
 import AuthService from '../service/authService';
 import Likes from './likes';
 import { useNavigate } from 'react-router-dom';
-
+import { useNotification } from '../service/notificationprovider';
 const Reviews = () => {
+   const { showNotification } = useNotification();
   const navigate = useNavigate();
   const [reviewData, setReviewData] = useState([]);
   const [menuOpenId, setMenuOpenId] = useState(null);
@@ -19,7 +20,7 @@ const Reviews = () => {
         setReviewData(response.data);
       } catch (error) {
         console.error('Error fetching reviews:', error);
-        alert('Unable to fetch the Reviews.');
+        showNotification(`unable to fetch the reviews. please look back later`,'error')
       }
     };
 
@@ -122,6 +123,7 @@ const Reviews = () => {
 
   return (
     <div style={styles.container}>
+      
       <h1 style={styles.heading}>Reviews</h1>
       {reviewData.length > 0 ? (
         reviewData.map((item) => (
@@ -135,7 +137,7 @@ const Reviews = () => {
               src={item.contentPoster}
               alt={item.contentName}
               style={styles.poster}
-              className="poster"
+              className="poster"s
             />
             <div style={styles.details}>
               {/* 3-dot menu */}
