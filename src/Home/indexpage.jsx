@@ -2,11 +2,14 @@
 import React, { useEffect, useState } from "react";
 import { FaStar, FaChevronLeft, FaChevronRight } from "react-icons/fa";
 import api from "../service/api";
+import { useNavigate } from "react-router-dom";
+import AuthService from "../service/authService";
+import { useNotification } from "../service/notificationprovider";
 
 // Card Component
-const Card = ({ item }) => (
+const Card = ({ item,onNavigate }) => (
   <div style={styles.card}>
-    <img
+    <img  onClick={() => onNavigate(item.imdbID)}
       src={
         item.poster && item.poster !== "N/A"
           ? item.poster
@@ -16,7 +19,7 @@ const Card = ({ item }) => (
       style={styles.poster}
     />
     <div style={styles.cardContent}>
-      <h4 style={styles.title}>{item.title}</h4>
+      <h4 onClick={() => onNavigate(item.imdbID)} style={styles.title}>{item.title}</h4>
       <div style={styles.stats}>
         {item.imdbRating && item.imdbRating !== "N/A" && (
           <span style={styles.stat}>
@@ -27,9 +30,14 @@ const Card = ({ item }) => (
     </div>
   </div>
 );
-
+  
 // Horizontal Scroll Section with Buttons
 const HorizontalScroll = ({ title, data }) => {
+
+  const navigate= useNavigate();
+  const navigator=(id)=>{
+    navigate(`/content/${id}`)
+  }
   const scrollRef = React.useRef(null);
 
   const scroll = (direction) => {
@@ -69,7 +77,7 @@ const HorizontalScroll = ({ title, data }) => {
           {/* Scroll Container */}
           <div ref={scrollRef} style={styles.scrollContainer}>
             {data.map((item) => (
-              <Card key={item.id} item={item} />
+              <Card key={item.id} item={item} onNavigate={navigator} />
             ))}
           </div>
         </>
@@ -80,9 +88,16 @@ const HorizontalScroll = ({ title, data }) => {
 
 // Home Page Component
 const Home = () => {
+  const { showNotification } = useNotification();
+  const isLoggedIn = AuthService.isLoggedIn();
+  debugger;
+  const navigate= useNavigate();
   const [homeData, setHomeData] = useState([]);
-
   useEffect(() => {
+    if(!isLoggedIn || isLoggedIn==null){
+      showNotification(`Please Login Or SignUp`, "error")
+    navigate(`/signin`)
+  }else{
     const fetchReviews = async () => {
       try {
         const response = await api.get("/Home");
@@ -92,11 +107,15 @@ const Home = () => {
       }
     };
     fetchReviews();
+
+  }
+    
+    
   }, []);
 
   return (
     <div style={styles.page}>
-      <h1 style={styles.pageTitle}>Welcome to CineVerse</h1>
+      {/* <h1 style={styles.pageTitle}>Welcome to CineVerse</h1> */}
 
       {/* Loop over categories */}
       {homeData.map((category, index) => {

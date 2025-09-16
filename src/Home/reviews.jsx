@@ -10,11 +10,15 @@ const Reviews = () => {
   const [reviewData, setReviewData] = useState([]);
   const [menuOpenId, setMenuOpenId] = useState(null);
   const userId = AuthService.getUserId();
-
+ const isLoggedIn = AuthService.isLoggedIn();
   const menuRefs = useRef({});
 
   useEffect(() => {
-    const fetchReviews = async () => {
+    if(!isLoggedIn || isLoggedIn==null){
+      showNotification(`Please Login Or SignUp`, "error")
+    navigate(`/signin`)
+  }else{
+      const fetchReviews = async () => {
       try {
         const response = await api.get("reviews");
         setReviewData(response.data);
@@ -25,6 +29,8 @@ const Reviews = () => {
     };
 
     fetchReviews();
+  }
+    
   }, []);
 
   // ✅ Fixed: Close dropdown when clicking outside

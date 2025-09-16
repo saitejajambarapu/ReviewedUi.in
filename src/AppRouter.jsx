@@ -12,6 +12,7 @@ import About from './navbar/About';
 import SearchSelected from './pages/SearchSelected';
 import Home from './Home/indexpage';
 import { NotificationProvider } from './service/notificationprovider';
+import PowerSearch from './pages/powersearch';
 
 function AppRouter() {
   return (
@@ -33,6 +34,7 @@ function AppRouter() {
             <Route path="search/:id" element={<SearchSelected />} />
             <Route path="profile/:id" element={<Profile />} />
             <Route path="myProfile" element={<Profile />} />
+            <Route path="powersearch" element={<PowerSearch />} />
           </Route>
         </Routes>
       </BrowserRouter>

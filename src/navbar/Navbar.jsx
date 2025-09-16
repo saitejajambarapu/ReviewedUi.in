@@ -22,7 +22,7 @@ const Navbar = () => {
       {/* Left - Logo */}
       <div>
         <Link to="/" style={styles.logo}>
-          🎬 Reviewd
+          🎬 Reviewed
         </Link>
       </div>
 
@@ -54,10 +54,16 @@ const Navbar = () => {
             Sign Out
           </Link>
         ) : (
-          <Link to="/signup" style={styles.authButton}>
-            Sign Up
-          </Link>
+          <>
+            <Link to="/signup" style={styles.authButton}>
+              Sign Up
+            </Link>
+            <Link to="/signin" style={styles.authButton}>
+              Sign In
+            </Link>
+          </>
         )}
+
       </div>
     </nav>
   );

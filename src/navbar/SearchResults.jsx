@@ -3,6 +3,7 @@ import { useLocation } from 'react-router-dom';
 import api from '../service/api';
 import { useNavigate } from 'react-router-dom';
 import { useNotification } from '../service/notificationprovider';
+import AuthService from '../service/authService';
 
 const SearchResults = () => {
   const { showNotification } = useNotification();
@@ -12,13 +13,17 @@ const SearchResults = () => {
   const [loadbutton, setLoadButton] = useState(false);
   const [pageNumber, setPageNumber] = useState(1);
   const [totalPage, setTotalPage] = useState(10);
-
+  const isLoggedIn = AuthService.isLoggedIn();
 
   const q = useMemo(() => {
     const queryParams = new URLSearchParams(location.search);
     return queryParams.get('q');
   }, [location.search]);
 
+
+  const powerSearch = ()=>{
+    navigate('/powersearch')
+  }
 
   const loadData = () => {
     debugger
@@ -34,7 +39,11 @@ const SearchResults = () => {
   }
 
   useEffect(() => {
-    const fetchContent = async () => {
+    if(!isLoggedIn || isLoggedIn==null){
+      showNotification(`Please Login Or SignUp`, "error")
+    navigate(`/signin`)
+  }else{
+        const fetchContent = async () => {
       try {
         debugger
         const response = await api.post("content", {
@@ -60,6 +69,8 @@ const SearchResults = () => {
 
 
     if (q) fetchContent();
+  }
+    
   }, [q, pageNumber]);
 
   if (!results || results.length === 0) {
@@ -149,6 +160,49 @@ const SearchResults = () => {
               Load Data
             </button>
           </div>
+          
+
+          {/* 👇 Invisible spacer div to push content down */}
+          <div style={{ height: "80px" }}></div>
+        </>
+      )}
+      {!loadbutton && (
+        <>
+          {/* Fixed button */}
+          <div
+            style={{
+              position: "fixed",
+              top: "80px", // distance from top
+              left: "50%",
+              transform: "translateX(-50%)",
+              zIndex: 1000,
+            }}
+          >
+            <button
+              onClick={powerSearch}
+              style={{
+                backgroundColor: "#e50914", // Netflix red
+                color: "#fff",
+                fontSize: "20px",
+                fontWeight: "bold",
+                padding: "14px 36px",
+                border: "none",
+                borderRadius: "4px",
+                cursor: "pointer",
+                transition: "all 0.3s ease",
+                boxShadow: "0 4px 12px rgba(0,0,0,0.3)",
+              }}
+              onMouseOver={(e) =>
+                (e.currentTarget.style.backgroundColor = "#f40612")
+              }
+              onMouseOut={(e) =>
+                (e.currentTarget.style.backgroundColor = "#e50914")
+              }
+            >
+              Didn't Find The Content?
+            </button>
+          </div>
+          
 
           {/* 👇 Invisible spacer div to push content down */}
           <div style={{ height: "80px" }}></div>
