@@ -4,33 +4,38 @@ import AuthService from '../service/authService';
 import Likes from './likes';
 import { useNavigate } from 'react-router-dom';
 import { useNotification } from '../service/notificationprovider';
+import Spinner from '../utils/spinner';
 const Reviews = () => {
-   const { showNotification } = useNotification();
+  const { showNotification } = useNotification();
   const navigate = useNavigate();
   const [reviewData, setReviewData] = useState([]);
   const [menuOpenId, setMenuOpenId] = useState(null);
   const userId = AuthService.getUserId();
- const isLoggedIn = AuthService.isLoggedIn();
+  const isLoggedIn = AuthService.isLoggedIn();
   const menuRefs = useRef({});
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if(!isLoggedIn || isLoggedIn==null){
+    if (!isLoggedIn || isLoggedIn == null) {
       showNotification(`Please Login Or SignUp`, "error")
-    navigate(`/signin`)
-  }else{
+      navigate(`/signin`)
+    } else {
+      setLoading(true);
       const fetchReviews = async () => {
-      try {
-        const response = await api.get("reviews");
-        setReviewData(response.data);
-      } catch (error) {
-        console.error('Error fetching reviews:', error);
-        showNotification(`unable to fetch the reviews. please look back later`,'error')
-      }
-    };
+        try {
+          const response = await api.get("reviews");
+          setReviewData(response.data);
+          setLoading(false);
+        } catch (error) {
+          console.error('Error fetching reviews:', error);
+          setLoading(false);
+          showNotification(`unable to fetch the reviews. please look back later`, 'error')
+        }
+      };
 
-    fetchReviews();
-  }
-    
+      fetchReviews();
+    }
+
   }, []);
 
   // ✅ Fixed: Close dropdown when clicking outside
@@ -83,13 +88,13 @@ const Reviews = () => {
       prevData.map(item =>
         item.id === id
           ? {
-              ...item,
-              contentReviews: {
-                ...item.contentReviews,
-                likes: likedData.data.length,
-              },
-              isLiked: likedData.data,
-            }
+            ...item,
+            contentReviews: {
+              ...item.contentReviews,
+              likes: likedData.data.length,
+            },
+            isLiked: likedData.data,
+          }
           : item
       )
     );
@@ -108,13 +113,13 @@ const Reviews = () => {
       prevData.map(item =>
         item.id === id
           ? {
-              ...item,
-              contentReviews: {
-                ...item.contentReviews,
-                dislikes: dislikedData.data.length,
-              },
-              disLiked: dislikedData.data,
-            }
+            ...item,
+            contentReviews: {
+              ...item.contentReviews,
+              dislikes: dislikedData.data.length,
+            },
+            disLiked: dislikedData.data,
+          }
           : item
       )
     );
@@ -128,74 +133,78 @@ const Reviews = () => {
   };
 
   return (
-    <div style={styles.container}>
-      
-      <h1 style={styles.heading}>Reviews</h1>
-      {reviewData.length > 0 ? (
-        reviewData.map((item) => (
-          <div
-            key={item.id}
-            style={styles.card}
-            className="review-card"
-          >
-            <img
-              onClick={() => handleReview(item.id)}
-              src={item.contentPoster}
-              alt={item.contentName}
-              style={styles.poster}
-              className="poster"s
-            />
-            <div style={styles.details}>
-              {/* 3-dot menu */}
-              <div
-                ref={(el) => (menuRefs.current[item.id] = el)}
-                style={{ position: 'relative', textAlign: 'right' }}
-              >
-                <button
-                  onClick={() =>
-                    setMenuOpenId(menuOpenId === item.id ? null : item.id)
-                  }
-                  style={styles.dotsButton}
-                >
-                  ⋮
-                </button>
-                {menuOpenId === item.id && (
-                console.log("menuOpenId:", menuOpenId, "item.id:", item.id),
-                <div style={styles.dropdown}>
-                  {userId == item.contentReviews?.userDto?.id && <div style={styles.dropdownItem} data-ignore-outside-click="true"  onClick={() => handleEdit(item.imdbId)}>Edit</div>}
-                  {userId == item.contentReviews?.userDto?.id && <div style={styles.dropdownItem} data-ignore-outside-click="true" onClick={() => handleReviewDelete(item.id)}>Delete</div>}
-                  <div style={styles.dropdownItem} data-ignore-outside-click="true" onClick={() => handleReview(item.id)}>View Review</div>
-                  </div>
-                )}
-              </div>
+    <div>
+      {loading ? <Spinner /> :
+        <div style={styles.container}>
 
-              <span onClick={() => handleReview(item.id)} style={{ cursor: 'pointer' }}>
-                <h2 style={styles.title}>{item.contentName}</h2>
-              </span>
-              <p><strong>Review:</strong> {item.contentReviews?.review}</p>
-              <p>
-                <strong>Reviewer:</strong>{' '}
-                <span
-                  onClick={() => handleReplyUser(item.contentReviews?.userDto?.id)}
-                  style={styles.reviewer}
-                >
-                  {item.contentReviews?.userDto?.name}
-                </span>
-              </p>
-              <Likes
-                item={item.contentReviews}
-                onLike={() => handleLiked(item.id)}
-                id={userId}
-                onDisLike={() => handleDisLiked(item.id)}
-              />
-              <p style={styles.rating}>⭐ <strong>{item.rating}/10</strong></p>
-            </div>
-          </div>
-        ))
-      ) : (
-        <h1>No reviews found at this time</h1>
-      )}
+          <h1 style={styles.heading}>Reviews</h1>
+          {reviewData.length > 0 ? (
+            reviewData.map((item) => (
+              <div
+                key={item.id}
+                style={styles.card}
+                className="review-card"
+              >
+                <img
+                  onClick={() => handleReview(item.id)}
+                  src={item.contentPoster}
+                  alt={item.contentName}
+                  style={styles.poster}
+                  className="poster" s
+                />
+                <div style={styles.details}>
+                  {/* 3-dot menu */}
+                  <div
+                    ref={(el) => (menuRefs.current[item.id] = el)}
+                    style={{ position: 'relative', textAlign: 'right' }}
+                  >
+                    <button
+                      onClick={() =>
+                        setMenuOpenId(menuOpenId === item.id ? null : item.id)
+                      }
+                      style={styles.dotsButton}
+                    >
+                      ⋮
+                    </button>
+                    {menuOpenId === item.id && (
+                      console.log("menuOpenId:", menuOpenId, "item.id:", item.id),
+                      <div style={styles.dropdown}>
+                        {userId == item.contentReviews?.userDto?.id && <div style={styles.dropdownItem} data-ignore-outside-click="true" onClick={() => handleEdit(item.imdbId)}>Edit</div>}
+                        {userId == item.contentReviews?.userDto?.id && <div style={styles.dropdownItem} data-ignore-outside-click="true" onClick={() => handleReviewDelete(item.id)}>Delete</div>}
+                        <div style={styles.dropdownItem} data-ignore-outside-click="true" onClick={() => handleReview(item.id)}>View Review</div>
+                      </div>
+                    )}
+                  </div>
+
+                  <span onClick={() => handleReview(item.id)} style={{ cursor: 'pointer' }}>
+                    <h2 style={styles.title}>{item.contentName}</h2>
+                  </span>
+                  <p><strong>Review:</strong> {item.contentReviews?.review}</p>
+                  <p>
+                    <strong>Reviewer:</strong>{' '}
+                    <span
+                      onClick={() => handleReplyUser(item.contentReviews?.userDto?.id)}
+                      style={styles.reviewer}
+                    >
+                      {item.contentReviews?.userDto?.name}
+                    </span>
+                  </p>
+                  <Likes
+                    item={item.contentReviews}
+                    onLike={() => handleLiked(item.id)}
+                    id={userId}
+                    onDisLike={() => handleDisLiked(item.id)}
+                  />
+                  <p style={styles.rating}>⭐ <strong>{item.rating}/10</strong></p>
+                </div>
+              </div>
+            ))
+          ) : (
+            <h1>No reviews found at this time</h1>
+          )}
+        </div>}
     </div>
+
   );
 };
 

@@ -5,6 +5,7 @@ import api from "../service/api";
 import { useNavigate } from "react-router-dom";
 import AuthService from "../service/authService";
 import { useNotification } from "../service/notificationprovider";
+import Spinner from "../utils/spinner";
 
 // Card Component
 const Card = ({ item,onNavigate }) => (
@@ -88,12 +89,14 @@ const HorizontalScroll = ({ title, data }) => {
 
 // Home Page Component
 const Home = () => {
+  const [loading, setLoading] = useState(true);
   const { showNotification } = useNotification();
   const isLoggedIn = AuthService.isLoggedIn();
   debugger;
   const navigate= useNavigate();
   const [homeData, setHomeData] = useState([]);
   useEffect(() => {
+    setLoading(true);
     if(!isLoggedIn || isLoggedIn==null){
       showNotification(`Please Login Or SignUp`, "error")
     navigate(`/signin`)
@@ -102,6 +105,7 @@ const Home = () => {
       try {
         const response = await api.get("/Home");
         setHomeData(response.data.contentList || []);
+        setLoading(false);
       } catch (error) {
         console.error("Error fetching reviews:", error);
       }
@@ -114,7 +118,10 @@ const Home = () => {
   }, []);
 
   return (
-    <div style={styles.page}>
+    <div>
+      {loading ? <Spinner /> :
+
+      <div style={styles.page}>
       {/* <h1 style={styles.pageTitle}>Welcome to CineVerse</h1> */}
 
       {/* Loop over categories */}
@@ -130,6 +137,9 @@ const Home = () => {
         );
       })}
     </div>
+}
+    </div>
+    
   );
 };
 

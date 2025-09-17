@@ -4,6 +4,7 @@ import api from '../service/api';
 import AuthService from '../service/authService';
 import { Popover, Typography, List, ListItem, ListItemText, Button, TextField } from '@mui/material';
 import Card from './card';
+import Spinner from '../utils/spinner';
 
 const ContentReview = () => {
   const navigate = useNavigate();
@@ -34,7 +35,7 @@ const ContentReview = () => {
     fetchReviews();
   }, [id]);
 
-  if (!data) return <div>Loading...</div>;
+  if (!data) return <div><Spinner /></div>;
 
   const handleLikesEnter = (event) => {
     if (likesTimeout.current) clearTimeout(likesTimeout.current);

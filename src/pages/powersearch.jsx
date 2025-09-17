@@ -1,22 +1,25 @@
 import React, { useState } from "react";
 import api from "../service/api";
 import { useNavigate } from 'react-router-dom';
+import Spinner from "../utils/spinner";
 
 const PowerSearch = () => {
+  const [loading, setLoading] = useState(false);
   const [movieName, setMovieName] = useState("");
   const [year, setYear] = useState(new Date().getFullYear());
   const [movieData, setMovieData] = useState(null);
   const currentYear = new Date().getFullYear();
   const years = [];
-   const navigate = useNavigate();
+  const navigate = useNavigate();
   for (let y = currentYear + 5; y >= currentYear - 20; y--) {
     years.push(y);
   }
-  const addReview=(imdbId)=>{
-        navigate(`/content/${imdbId}`)
+  const addReview = (imdbId) => {
+    navigate(`/content/${imdbId}`)
   }
 
   const fetchMovie = async () => {
+    setLoading(true);
     if (!movieName) return;
     try {
       const res = await api.get("/content/powersearch", {
@@ -24,6 +27,7 @@ const PowerSearch = () => {
       });
       const data = res.data;
       setMovieData(data.Response === "True" ? data : null);
+      setLoading(false);
     } catch (error) {
       console.error("Error fetching movie:", error);
       setMovieData(null);
@@ -31,59 +35,62 @@ const PowerSearch = () => {
   };
 
   return (
-    <div className="app">
-      <div className="search-container">
-        <input
-          type="text"
-          placeholder="Search for a movie..."
-          value={movieName}
-          onChange={(e) => setMovieName(e.target.value)}
-          className="search-input"
-        />
-        <select
-          value={year}
-          onChange={(e) => setYear(e.target.value)}
-          className="year-dropdown"
-        >
-          {years.map((y) => (
-            <option key={y} value={y}>
-              {y}
-            </option>
-          ))}
-        </select>
-        <button onClick={fetchMovie} className="search-button">
-          Search
-        </button>
-      </div>
-
-      {movieData && (
-        <div className="movie-card">
-          <img src={movieData.Poster} alt={movieData.Title} className="poster" />
-          <div className="movie-info">
-            <h2>
-              {movieData.Title} ({movieData.Year})
-            </h2>
-            <p>
-              <strong>Genre:</strong> {movieData.Genre}
-            </p>
-            <p>
-              <strong>Director:</strong> {movieData.Director}
-            </p>
-            <p>
-              <strong>Actors:</strong> {movieData.Actors}
-            </p>
-            <p className="plot">{movieData.Plot}</p>
-
-            {/* Add Review Button */}
-            <div className="button-container">
-              <button onClick={()=>addReview(movieData.imdbID)} className="review-button">Add Review</button>
-            </div>
+    <div>
+      {loading ? <Spinner /> :
+        <div className="app">
+          <div className="search-container">
+            <input
+              type="text"
+              placeholder="Search for a movie..."
+              value={movieName}
+              onChange={(e) => setMovieName(e.target.value)}
+              className="search-input"
+            />
+            <select
+              value={year}
+              onChange={(e) => setYear(e.target.value)}
+              className="year-dropdown"
+            >
+              {years.map((y) => (
+                <option key={y} value={y}>
+                  {y}
+                </option>
+              ))}
+            </select>
+            <button onClick={fetchMovie} className="search-button">
+              Search
+            </button>
           </div>
-        </div>
-      )}
 
-      {/* Inline CSS */}
-      <style>{`
+          {movieData && (
+            <div className="movie-card">
+              <img src={movieData.Poster} alt={movieData.Title} className="poster" />
+              <div className="movie-info">
+                <h2>
+                  {movieData.Title} ({movieData.Year})
+                </h2>
+                <p>
+                  <strong>Genre:</strong> {movieData.Genre}
+                </p>
+                <p>
+                  <strong>Director:</strong> {movieData.Director}
+                </p>
+                <p>
+                  <strong>Actors:</strong> {movieData.Actors}
+                </p>
+                <p className="plot">{movieData.Plot}</p>
+
+                {/* Add Review Button */}
+                <div className="button-container">
+                  <button onClick={() => addReview(movieData.imdbID)} className="review-button">Add Review</button>
+                </div>
+              </div>
+            </div>
+
+          )}
+
+          {/* Inline CSS */}
+          <style>{`
         body {
           margin: 0;
           font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
@@ -187,7 +194,11 @@ const PowerSearch = () => {
           to { opacity: 1; transform: translateY(0); }
         }
       `}</style>
+        </div>
+      }
     </div>
+
+
   );
 };
 

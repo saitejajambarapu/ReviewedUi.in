@@ -2,28 +2,35 @@ import React, { useState, useEffect } from "react";
 import { useParams, useLocation } from "react-router-dom";
 import api from "../service/api";
 import { useNotification } from "../service/notificationprovider";
+import Spinner from "../utils/spinner";
 
 const SearchSelected = () => {
   const { id } = useParams();
   const [result, setResult] = useState(null);
   const location = useLocation();
-
+  const [loading, setLoading] = useState(true);
   const { showNotification } = useNotification();
   
 
   useEffect(() => {
     const fetchContent = async () => {
       try {
+        setLoading(true)
         const response = await api.get("content/imdb", { params: { imdbId: id } });
         setResult(response.data);
+        setLoading(false);
       } catch (error) {
         console.error("Error fetching content:", error);
+        setLoading(false);
         alert("Unable to fetch the Content Details.");
       }
     };
     fetchContent();
   }, [id]);
 
+  if(loading){
+    return <div> <Spinner /> </div>
+  }
   if (!result) {
     return <div className="no-content">No content found.</div>;
   }

@@ -4,10 +4,12 @@ import api from '../service/api';
 import { useNavigate, useParams } from 'react-router-dom';
 import AuthService from '../service/authService';
 import { useNotification } from '../service/notificationprovider';
+import Spinner from '../utils/spinner';
 const Card = ({ item, showHeart = false, nav = false }) => {
   const commentsCount = item.reviewReplies?.length || 0;
   const navigate = useNavigate();
   const { showNotification } = useNotification();
+
 
   const handlePost = () => {
     nav ? navigate(`/review/${item.contentReviews.id}`) : navigate(`/content/${item.imdbId}`);
@@ -213,7 +215,7 @@ const Profile = () => {
         setProfileData(response.data);
       } catch (error) {
         console.error('Error fetching profile:', error);
-        showNotification(`Unable to fetch the profile.`,"error")
+        showNotification(`Unable to fetch the profile.`, "error")
       } finally {
         setLoading(false);
       }
@@ -224,7 +226,7 @@ const Profile = () => {
   if (loading)
     return (
       <div style={{ color: '#fff', textAlign: 'center', marginTop: '50px' }}>
-        Loading...
+        <Spinner />
       </div>
     );
   if (!profileData)
@@ -314,21 +316,37 @@ const Profile = () => {
       </div>
 
       {/* Horizontal Carousels */}
-      <HorizontalScroll
-        title="Your Reviews"
-        data={profileData.reviewpage}
-        navigating={true}
-      />
-      <HorizontalScroll
+      {profileData.reviewpage.length > 0 &&
+        <HorizontalScroll
+          title="Your Reviews"
+          data={profileData.reviewpage}
+          navigating={true}
+        />
+      }
+
+      {profileData.likedList.length > 0 && <HorizontalScroll
         title="Liked List ❤️"
         data={profileData.likedList}
         showHeart={true}
-      />
-      <HorizontalScroll
-        title="Watchlist 👀"
-        data={profileData.watchedList}
-        showHeart={true}
-      />
+      />}
+
+      {profileData.watchedList.length > 0 &&
+        <HorizontalScroll
+          title="Watchlist 👀"
+          data={profileData.watchedList}
+          showHeart={true}
+        />
+      }
+      {
+        profileData.watchedList.length === 0 &&
+        profileData.likedList.length === 0 &&
+        profileData.reviewpage.length === 0 && (
+          <div style={{ display: "flex", justifyContent: "center", marginTop: "20px" }}>
+            <p>Nothing Yet</p>
+          </div>
+        )
+      }
+
     </div>
   );
 };
